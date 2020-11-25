@@ -1,0 +1,36 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.security.roles.ProjectRoleManager
+def project = "project1"
+def role = "role1"
+def defaultAssigneeMapping = [
+  "key1" : "value1"
+]
+ 
+def getUsersForSpecifiedRolesInProject(String projectName, String role){
+    def projectRoleManager = ComponentAccessor.getComponent(ProjectRoleManager.class)
+    def projectRole = projectRoleManager.getProjectRole(role)
+    def project  = ComponentAccessor.getProjectManager().getProjectByCurrentKey(projectName)
+    def usersInRole = projectRoleManager.getProjectRoleActors(projectRole, project).getApplicationUsers().toList()
+    return usersInRole
+}
+def isUserInRole(String user, String projectName, String role){
+  for(u in getUsersForSpecifiedRolesInProject(projectName, role)){
+   if(u.toString().contains(user))
+    {
+      return true
+    }
+  }
+  return false
+}
+if(!isUserInRole(issue.getAssigneeUser().getName(), project, role))
+{
+  String targetDb = issue.get("Target DB")
+  if(defaultAssigneeMapping.containsKey(targetDb))
+  {
+    def newAssignee = ComponentAccessor.userManager.getUser(defaultAssigneeMapping.get(targetDb))
+    if(newAssignee){
+      issue.setAssignee(newAssignee);
+    }
+  }
+}
+return true
