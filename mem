@@ -1,0 +1,9 @@
+# Configure docker daemon proxy
+cat /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=http://10.123.0.132:3128"
+Environment="HTTPS_PROXY=http://10.123.0.132:3128"
+Environment="NO_PROXY=localhost,127.0.0.1"
+
+systemctl daemon-reload
+systemctl restart docker
