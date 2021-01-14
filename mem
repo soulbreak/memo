@@ -7,3 +7,15 @@ Environment="NO_PROXY=localhost,127.0.0.1"
 
 systemctl daemon-reload
 systemctl restart docker
+
+
+# Create index-pattern by POSZT request :
+
+curl -k -X POST -u ${USER}:${PASS} "https://URL:8080/api/saved_objects/index-pattern/INDEXID" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d'
+{
+  "attributes": {
+    "title": "app-*",
+    "timeFieldName": "@timestamp"
+  }
+}'
+
