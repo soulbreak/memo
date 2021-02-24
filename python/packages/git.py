@@ -22,6 +22,15 @@ class GitManager(object):
         json_data = json.loads(resp)
         return json_data
 
+    def pull_request(self, base_branch, head_branch, f_repo, f_owner, text="My pull", title="Title"):
+        data = {"base" : base_branch, "head" : head_branch, "title" : title }
+        #params = urllib.urlencode(data)
+        #resp = self.git_request.post(short_url='/api/v3/repos/{0}/{1}/pulls?{2}'.format(f_owner, f_repo, params)).read()
+        resp = self.git_request.post(data=data, short_url='/api/v3/repos/{0}/{1}/pulls'.format(f_owner, f_repo)).read()
+        Log.info("Branch creation response : {0}".format(resp))
+        json_data = json.loads(resp)
+        return json_data
+
     def get_branch_tree(self, f_branch, f_repo, f_owner):
         # resp = gr.get(short_url='/api/v3/repositories')
         resp = self.git_request.get(short_url='/api/v3/repos/{0}/{1}/branches/{2}'.format(
@@ -94,7 +103,7 @@ class GitManager(object):
             Log.debug("{0} does not exist yet".format(file))
 
         resp = self.git_request.put(data=post_data,
-                                    short_url='/api/v3/repos/{0}/{1}/contents/{2}'.format(f_owner, f_repo, f_git_path))
+                                    short_url='/api/v3/repos/{0}/{1}/contents/{2}'.format(f_owner, f_repo, f_git_path, f_branch))
         if resp.code >= 200 and resp.code < 300:
             Log.info("{0}/{1}@{2}:{3} successfully update with content of {4}".format(
                 f_owner, f_repo, f_branch, f_git_path, f_filepath))
@@ -201,8 +210,9 @@ class GitRequests(object):
 
     def put(self, data=None, short_url=None, full_url=None):
         self._geturl(short_url, full_url)
-        Log.info('PUT {0}'.format(self.completeUrl))
+        Log.info('PUT {0} with data {1}'.format(self.completeUrl, json.dumps(data)))
         req = self._build_request('PUT')
+	response = None
         response = urllib2.urlopen(req, json.dumps(data))
         if hasattr(response, 'links') and 'next' in response.links:
             self.next_link = response.links['next']
@@ -219,4 +229,3 @@ class GitRequests(object):
         if hasattr(response, 'links') and 'next' in response.links:
             self.next_link = response.links['next']
         return response
-
